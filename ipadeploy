@@ -1,0 +1,56 @@
+
+
+# dropbox api create and generate TOKEN 
+# https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps
+# https://www.dropbox.com/developers/documentation/http/documentation#sharing-get_shared_links
+
+if [ "$#" -ne 1 ]; then
+  echo  "Usage: filename.ipa"
+  exit 2
+fi
+
+DROPBOX_TOKEN="llSzZ_QwqOkAAAAAAAA_Z3kNni3yM0lacIy8Zrw7MmWm56frvQZYG_wI6ntM6-nP"
+FILENAME=`echo $PWD/$1 | sed 's/\/Users\/sparrow\/Dropbox\///g'`
+MANIFESTNAME=`echo $PWD/manifest.plist | sed 's/\/Users\/sparrow\/Dropbox\///g'`
+#echo $FILENAME
+#echo $MANIFESTNAME
+JSON=`curl -s POST https://api.dropboxapi.com/2/sharing/get_shared_links \
+    --header "Authorization: Bearer $DROPBOX_TOKEN" \
+    --header "Content-Type: application/json" \
+    --data "{\"path\": \"/$FILENAME\"}"`
+URL=`echo $JSON | jq '.links[0].url' | sed 's/www.dropbox.com/dl.dropboxusercontent.com/g' | sed 's/?dl=0//g'`
+echo $URL
+if [ $URL == null ]; then 
+  echo "Create link"
+  JSON=`curl -s POST https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings \
+       --header "Authorization: Bearer $DROPBOX_TOKEN" \
+       --header "Content-Type: application/json" \
+       --data "{\"path\": \"/$FILENAME\",\"settings\": {\"requested_visibility\": \"public\"}}"` 
+  URL=`echo $JSON | jq '.url' | sed 's/www.dropbox.com/dl.dropboxusercontent.com/g' | sed 's/?dl=0//g'`
+  echo $URL
+fi
+
+/usr/libexec/PlistBuddy -c "Set :items:0:assets:0::url ${URL}" $PWD/manifest.plist
+# {"links": [{".tag": "path", "url": "https://www.dropbox.com/s/kxk2smby917q38x/ots.ipa?dl=0", "visibility": {".tag": "public"}, "path": "/adhoc/test/ots.ipa"}]}
+
+# parse url with jq (brew install jq)
+
+HTML=`curl -s POST https://api.dropboxapi.com/2/sharing/get_shared_links \
+   --header "Authorization: Bearer $DROPBOX_TOKEN" \
+   --header "Content-Type: application/json" \
+   --data "{\"path\": \"/$MANIFESTNAME\"}"`
+
+HREF=`echo $HTML | jq '.links[0].url' | sed 's/www.dropbox.com/dl.dropboxusercontent.com/g' | sed 's/?dl=0//g'`
+if [ $HREF == null ]; then
+  echo "HREF create link"
+  HTML=`curl -s POST https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings \
+       --header "Authorization: Bearer $DROPBOX_TOKEN" \
+       --header "Content-Type: application/json" \
+       --data "{\"path\": \"/$MANIFESTNAME\",\"settings\":{\"requested_visibility\":\"public\"}}"`
+  HREF=`echo $HTML | jq '.url' | sed 's/www.dropbox.com/dl.dropboxusercontent.com/g' | sed 's/?dl=0//g'`
+fi
+
+TAG=">DOWNLOAD</a></h2>"
+echo "<h2><a href=\"itms-services://?action=download-manifest&url="$HREF$TAG
+
+
