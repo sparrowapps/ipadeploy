@@ -9,9 +9,9 @@ if [ "$#" -ne 1 ]; then
   exit 2
 fi
 
-DROPBOX_TOKEN="llSzZ_QwqOkAAAAAAAA_Z3kNni3yM0lacIy8Zrw7MmWm56frvQZYG_wI6ntM6-nP"
-FILENAME=`echo $PWD/$1 | sed 's/\/Users\/sparrow\/Dropbox\///g'`
-MANIFESTNAME=`echo $PWD/manifest.plist | sed 's/\/Users\/sparrow\/Dropbox\///g'`
+DROPBOX_TOKEN="your's token here"
+FILENAME=`echo $PWD/$1 | sed 's/\/Users\/your account name\/Dropbox\///g'`
+MANIFESTNAME=`echo $PWD/manifest.plist | sed 's/\/Users\/your account name\/Dropbox\///g'`
 #echo $FILENAME
 #echo $MANIFESTNAME
 JSON=`curl -s POST https://api.dropboxapi.com/2/sharing/get_shared_links \
