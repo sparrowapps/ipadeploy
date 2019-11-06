@@ -50,7 +50,8 @@ if [ $HREF == null ]; then
   HREF=`echo $HTML | jq '.url' | sed 's/www.dropbox.com/dl.dropboxusercontent.com/g' | sed 's/?dl=0//g'`
 fi
 
-TAG=">DOWNLOAD</a></h2>"
+HREF=`echo $HREF | sed 's/\"//g'`
+TAG="\">DOWNLOAD</a></h2>"
 echo "<h2><a href=\"itms-services://?action=download-manifest&url="$HREF$TAG
 
 
